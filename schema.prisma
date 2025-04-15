@@ -1,0 +1,118 @@
+// Prisma schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:o4hXCb95qJEXln2ju2kc1NR8Iqje8L7zFkx6ZiYGp3H9KRWx0B@8c8564af-f06b-49f7-be56-e61ee37b951b.hsvc.ir:31581/lcmarket"
+}
+
+model User {
+  id       Int        @id @default(autoincrement())
+  email    String     @unique
+  password String
+  username String
+  avatar   String?
+  deleted  DateTime?
+  roles    RoleUser[]
+  Product  Product[]
+  Order    Order[]
+
+  @@index([email])
+}
+
+model RoleUser {
+  userId Int
+  roleId Int
+  user   User @relation(fields: [userId], references: [id])
+  role   Role @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+}
+
+model Product {
+  id           Int       @id @default(autoincrement())
+  name         String    @unique
+  assignee     User      @relation(fields: [userId], references: [id])
+  durationTime Int
+  userId       Int
+  deleted      DateTime?
+  Order        Order[]
+}
+
+model Order {
+  id          Int       @id @default(autoincrement())
+  orderNumber String    @unique
+  product     Product   @relation(fields: [productId], references: [id])
+  assignedTo  User      @relation(fields: [userId], references: [id])
+  name        String
+  email       String
+  mobile      String
+  status      OrderStatus
+  orderTime   DateTime
+  dueTime     DateTime
+  deleted     DateTime?
+  assignee    Int
+  productId   Int
+  userId      Int
+  Label       Label[]
+
+  @@index([assignee])
+}
+
+model Role {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  default     Boolean      @default(false)
+  deleted     DateTime?
+  User        RoleUser[]
+  permissions Permission[]
+}
+
+model Permission {
+  id      Int        @id @default(autoincrement())
+  name    String     @unique
+  deleted DateTime?
+  read    ReadAccess
+  roles   Role[]
+  routes  Route[]
+}
+
+model Route {
+  id          Int           @id @default(autoincrement())
+  address     String
+  method      RequestMethod
+  description String
+  deleted     DateTime?
+  permissions Permission[]
+}
+
+model Label {
+  id      Int       @id @default(autoincrement())
+  name    String    @unique
+  color   String
+  deleted DateTime?
+  Order   Order[]
+}
+
+enum RequestMethod {
+  GET
+  POST
+  DELETE
+  PATCH
+  PUT
+}
+
+enum OrderStatus {
+  COMPLETE
+  PENDING
+  CANCELED
+}
+
+enum ReadAccess {
+  OWN
+  ANY
+}
