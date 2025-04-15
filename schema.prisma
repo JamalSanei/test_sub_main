@@ -21,6 +21,7 @@ model User {
   Product   Product[]
   Order     Order[]
   FirstName String?
+  LastName  String?
 
   @@index([email])
 }
